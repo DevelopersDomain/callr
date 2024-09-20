@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <title>G30Meeting</title>
+</head>
+<style>
+   body {
+        background-color: #121212; /* Dark background color */
+        color: #ffffff; /* White text color */
+        font-family: Arial, sans-serif; /* Set default font */
+        padding-top: 20px; /* Add top padding */
+    }
+
+    .navbar {
+        background-color: #343a40 !important; /* Dark navbar */
+    }
+
+    .navbar-brand {
+        color: aliceblue !important; /* White text color */
+    }
+
+    .container-fluid {
+        margin-top: 20px; /* Add some top margin */
+        padding-bottom: 20px; /* Add bottom padding */
+    }
+
+    .form-label {
+        font-weight: bold; /* Make form labels bold */
+        color: #ffffff; /* White text color */
+        margin-bottom: 10px; /* Add bottom margin */
+    }
+
+    .btn {
+        margin-right: 10px; /* Add some right margin to buttons */
+        margin-bottom: 10px; /* Add bottom margin to buttons */
+    }
+
+    /* Styling for video containers */
+    .video-container {
+        background-color: #333333; /* Dark background */
+        border-radius: 15px; /* Rounded corners */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        padding: 30px; /* Add padding */
+        margin-bottom: 30px; /* Add bottom margin */
+        position: relative; /* Position relative for absolute elements */
+    }
+
+    /* Styling for video container headings */
+    .video-title {
+        margin-bottom: 20px; /* Add bottom margin */
+        font-size: 24px; /* Larger font size */
+        color: #ffffff; /* White text color */
+        position: absolute; /* Position absolute for positioning */
+        top: 20px; /* Align heading to the top */
+        left: 30px; /* Add left padding */
+    }
+
+    /* Styling for video elements */
+    video {
+        width: 100%; /* Make videos fill container */
+        border-radius: 12px; /* Rounded corners */
+    }
+
+    /* Styling for buttons inside video containers */
+    .video-container .btn {
+        margin-top: 20px; /* Add top margin */
+        border-radius: 8px; /* Rounded corners */
+        padding: 10px 20px; /* Add padding */
+        font-size: 16px; /* Larger font size */
+        font-weight: bold; /* Bold text */
+        transition: all 0.3s ease; /* Smooth transition */
+        position: absolute; /* Position absolute for positioning */
+        bottom: 20px; /* Align buttons to the bottom */
+        left: 30px; /* Add left padding */
+    }
+
+    .video-container .btn:hover {
+        transform: translateY(-3px); /* Move button slightly up on hover */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add shadow on hover */
+    }
+
+    /* Adjusting column spacing */
+    .col {
+        padding-right: 15px;
+        padding-left: 15px;
+    }
+    .poll-container {
+            margin-top: 20px;
+        }
+        .poll-option {
+            margin-bottom: 10px;
+        }
+        .poll-results {
+            margin-top: 20px;
+        }
+</style>
+
+<body>
+    <!-- As a heading -->
+    <nav class="navbar navbar-light bg-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1" style="color: aliceblue;">G30Meeting</span>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <div class="row">
+            <div id="poll-container" class="poll-container">
+                <!-- Poll options will be dynamically added here -->
+            </div>
+            <div id="poll-results" class="poll-results" style="display: none;">
+                <!-- Poll results will be displayed here -->
+            </div>
+            <div class="col-5 pt-5 ps-5 col-sm-7">
+                <label class="form-label">Enter Room ID to connect or create</label>
+                <input id="room-input" type="text" class="form-control" placeholder="room ID">
+                <br>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-secondary mb-3" onclick="createRoom()">Create Room</button>
+                    <button type="submit" class="btn btn-primary mb-3" onclick="joinRoom()">Join Room</button>
+                    <button type="submit" class="btn btn-success mb-3"
+                        onclick="joinRoomWithoutCamShareScreen()">Join Room and Share screen directly</button>
+                    <button type="submit" class="btn btn-dark mb-3"
+                        onclick="joinRoomShareVideoAsStream()">Join Room and stream local media </button>
+                </div>
+            </div>
+            <div class="col-7 pt-5 ps-5 pe-5 col-sm-5">
+                <div class="alert alert-info alert-dismissible fade show mt-3" role="alert" id="notification" hidden>
+                    <strong>Holy guacamole!</strong> You should check in on some of those fields below.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col ps-5 pt-5" id="local-vid-container" hidden>
+                <div class="video-container">
+                    <h2 class="video-title">Local Stream</h2>
+                    <video height="300" id="local-video" controls class="local-video"></video>
+                    <button type="submit" onclick="startScreenShare()" class="btn btn-success">Share Screen</button>
+                </div>
+            </div>
+            <div class="col ps-5 pt-5" id="screenshare-container" hidden>
+                <div class="video-container">
+                    <h2 class="video-title">Screen Shared Stream</h2>
+                    <video height="300" id="screenshared-video" controls class="local-video"></video>
+                </div>
+            </div>
+            <div class="col ps-5 pt-5" id="remote-vid-container" hidden>
+                <div class="video-container">
+                    <h2 class="video-title">Remote Stream</h2>
+                    <video height="300" id="remote-video" controls class="remote-video"></video>
+                </div>
+            </div>
+            <div class="col ps-5 pt-5" id="local-mdeia-container" hidden>
+                <div class="video-container">
+                    <h2 class="video-title">Local video from media</h2>
+                    <video height="300" id="local-media" controls muted loop
+                        src="/media/im.abhishekbhardwaj bharmour.mp4"></video>
+                </div>
+            </div>
+            
+        </div>
+        <div id="poll-creation" hidden>
+            <button type="submit" onclick="leaveMeeting()" class="btn btn-success">LeaveMeeting</button>
+            <button type="submit" onclick="toggleMute()" class="btn btn-success">Mute/Unmute</button>
+            <button type="submit" onclick="toggleCamera()" class="btn btn-success">Camera On/Off</button>
+            <input type="text" id="poll-option" placeholder="Enter Poll Option">
+            <button onclick="addPollOption()">Add Option</button>
+            <button onclick="createPoll()">Create Poll</button>
+        </div>
+        
+        
+    </div>
+
+    <!-- Optional JavaScript; choose one of the two! -->
+
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+
+    <!-- check https://peerjs.com/ for latest CDN-->
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="/javascripts/script.js"></script>
+
+</body>
+
+</html>
